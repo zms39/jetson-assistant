@@ -1,7 +1,7 @@
 import subprocess
 import os
 
-MODEL_PATH = "/home/cwru26ai/assistant/models/en_US-lessac-medium.onnx"  # update youruser
+MODEL_PATH = "/home/cwru26ai/assistant/models/en_US-lessac-medium.onnx"
 
 class TextToSpeech:
     def speak(self, text):

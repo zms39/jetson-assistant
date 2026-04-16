@@ -1,6 +1,5 @@
 import sys
 import time
-
 import requests
 
 sys.path.insert(0, "/home/cwru26ai/assistant")
@@ -30,6 +29,11 @@ def wait_for_ollama():
         time.sleep(2)
 
 
+def set_display(display, state, response_text=""):
+    display.set_state(state, response_text)
+    display.update()
+
+
 def main():
     wait_for_ollama()
 
@@ -50,38 +54,37 @@ def main():
     print("Assistant running. Say the wake word to trigger listening.")
 
     while True:
-        display.set_state(state, response_text)
-        display.update()
+        state = "idle"
+        set_display(display, state, response_text)
 
-        if state == "idle":
-            wake_name = wake.wait_for_wake_word()
-            print(f"Activated by: {wake_name}")
-            state = "listening"
+        wake_name = wake.wait_for_wake_word()
+        print(f"Activated by: {wake_name}")
 
-        elif state == "listening":
-            transcribed_text = stt.listen_and_transcribe()
+        state = "listening"
+        set_display(display, state, response_text)
+        transcribed_text = stt.listen_and_transcribe()
 
-            if transcribed_text.strip():
-                print(f"User said: {transcribed_text}")
-                state = "thinking"
-            else:
-                print("No speech detected. Returning to idle.")
-                state = "idle"
+        if not transcribed_text.strip():
+            print("No speech detected. Returning to idle.")
+            time.sleep(1.0)
+            continue
 
-        elif state == "thinking":
-            print("Querying LLM...")
-            response_text = llm.query(transcribed_text)
-            print(f"Assistant: {response_text}")
-            state = "speaking"
+        print(f"User said: {transcribed_text}")
 
-        elif state == "speaking":
-            tts.speak(response_text)
+        state = "thinking"
+        set_display(display, state, response_text)
+        print("Querying LLM...")
+        response_text = llm.query(transcribed_text)
 
-            response_text = ""
-            transcribed_text = ""
+        print(f"Assistant: {response_text}")
 
-            time.sleep(POST_RESPONSE_COOLDOWN)
-            state = "idle"
+        state = "speaking"
+        set_display(display, state, response_text)
+        tts.speak(response_text)
+
+        response_text = ""
+        transcribed_text = ""
+        time.sleep(POST_RESPONSE_COOLDOWN)
 
 
 if __name__ == "__main__":

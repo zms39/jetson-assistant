@@ -11,7 +11,7 @@ def main():
     while True:
         detected = wake.wait_for_wake_word()
         print(f"Detected: {detected}")
-        time.sleep(2.0)
+        time.sleep(4)
 
 if __name__ == "__main__":
     main()

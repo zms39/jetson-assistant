@@ -26,7 +26,7 @@ class WakeWordListener:
         threshold: float = 0.5,
         vad_threshold: float = 0.3,
         wakeword_models=None,
-        cooldown_seconds: float = 1.5,
+        cooldown_seconds: float = 4,
     ):
         self.mic_index = mic_index
         self.threshold = threshold

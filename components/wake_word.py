@@ -4,6 +4,7 @@ import sounddevice as sd
 from scipy.signal import resample_poly
 import openwakeword
 from openwakeword.model import Model
+import time
 
 MIC_INDEX = 24
 
@@ -25,9 +26,11 @@ class WakeWordListener:
         threshold: float = 0.5,
         vad_threshold: float = 0.3,
         wakeword_models=None,
+        cooldown_seconds: float = 1.5,
     ):
         self.mic_index = mic_index
         self.threshold = threshold
+        self.cooldown_seconds = cooldown_seconds
         self.audio_queue = queue.Queue()
 
         openwakeword.utils.download_models()
@@ -72,4 +75,12 @@ class WakeWordListener:
                 for wake_name, score in prediction.items():
                     if score >= self.threshold:
                         print(f"Wake word detected: {wake_name} ({score:.3f})")
+
+                        while not self.audio_queue.empty():
+                            try:
+                                self.audio_queue.get_nowait()
+                            except Exception:
+                                break
+
+                        time.sleep(self.cooldown_seconds)
                         return wake_name

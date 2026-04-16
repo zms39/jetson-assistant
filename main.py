@@ -1,11 +1,13 @@
 import sys
-import time
-import requests
+sys.path.insert(0, '/home/cwru26ai/assistant')
 
-sys.path.insert(0, "/home/cwru26ai/assistant")
+# Import wake word FIRST before anything loads numpy 2.x
+from components.wake_word import WakeWordListener
 
+# Then the rest
 from components.stt import SpeechToText
 from components.llm import LLMClient
+import time
 from components.tts import TextToSpeech
 from components.wake_word import WakeWordListener
 from display.display_manager import DisplayManager

@@ -12,16 +12,17 @@ from components.wake_word import WakeWordListener
 from display.display_manager import DisplayManager
 
 MIC_INDEX = 24
-WAKE_THRESHOLD = 0.5
+WAKE_THRESHOLD = 0.7
 VAD_THRESHOLD = 0.3
+POST_RESPONSE_COOLDOWN = 1.5
 
 
 def wait_for_ollama():
     print("Waiting for Ollama...")
     while True:
         try:
-            r = requests.get("http://localhost:11434/api/tags", timeout=2)
-            if r.status_code == 200:
+            response = requests.get("http://localhost:11434/api/tags", timeout=2)
+            if response.status_code == 200:
                 print("Ollama ready.")
                 return
         except Exception:
@@ -36,8 +37,6 @@ def main():
         mic_index=MIC_INDEX,
         threshold=WAKE_THRESHOLD,
         vad_threshold=VAD_THRESHOLD,
-        enable_speex_noise_suppression=False,
-        wakeword_models=None,
     )
     stt = SpeechToText(mic_index=MIC_INDEX)
     llm = LLMClient()
@@ -61,19 +60,27 @@ def main():
 
         elif state == "listening":
             transcribed_text = stt.listen_and_transcribe()
+
             if transcribed_text.strip():
+                print(f"User said: {transcribed_text}")
                 state = "thinking"
             else:
+                print("No speech detected. Returning to idle.")
                 state = "idle"
 
         elif state == "thinking":
+            print("Querying LLM...")
             response_text = llm.query(transcribed_text)
+            print(f"Assistant: {response_text}")
             state = "speaking"
 
         elif state == "speaking":
             tts.speak(response_text)
+
             response_text = ""
             transcribed_text = ""
+
+            time.sleep(POST_RESPONSE_COOLDOWN)
             state = "idle"
 
 

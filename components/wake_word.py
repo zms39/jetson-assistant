@@ -1,54 +1,56 @@
 import queue
-from typing import Optional
-
 import numpy as np
-import openwakeword
 import sounddevice as sd
+from scipy.signal import resample_poly
+import openwakeword
 from openwakeword.model import Model
 
 MIC_INDEX = 24
-SAMPLE_RATE = 16000
+
+# Mic capture rate
+INPUT_RATE = 48000
+
+# openWakeWord expects 16 kHz int16 PCM
+MODEL_RATE = 16000
+
 CHANNELS = 1
-CHUNK_SIZE = 1280  # 80 ms at 16 kHz
-DEFAULT_THRESHOLD = 0.5
-DEFAULT_VAD_THRESHOLD = 0.3
+
+# 80 ms chunk at 48 kHz = 3840 samples
+INPUT_CHUNK_SIZE = 3840
 
 
 class WakeWordListener:
     def __init__(
         self,
         mic_index: int = MIC_INDEX,
-        threshold: float = DEFAULT_THRESHOLD,
-        vad_threshold: float = DEFAULT_VAD_THRESHOLD,
-        enable_speex_noise_suppression: bool = False,
-        wakeword_models: Optional[list[str]] = None,
+        threshold: float = 0.5,
+        vad_threshold: float = 0.3,
+        model_names=None,
     ):
         self.mic_index = mic_index
         self.threshold = threshold
-        self.audio_queue: queue.Queue[np.ndarray] = queue.Queue()
+        self.audio_queue = queue.Queue()
 
-        # Download included pre-trained models once, then instantiate the detector.
-        # Leaving wakeword_models empty loads the bundled pre-trained models.
         openwakeword.utils.download_models()
+
         self.model = Model(
-            wakeword_models=wakeword_models or [],
+            wakeword_models=model_names if model_names else None,
             vad_threshold=vad_threshold,
-            enable_speex_noise_suppression=enable_speex_noise_suppression,
         )
 
-    def _audio_callback(self, indata, frames, time_info, status):
+    def _audio_callback(self, indata, frames, time, status):
         if status:
             print(f"Audio status: {status}")
 
         pcm = np.frombuffer(indata, dtype=np.int16).copy()
         self.audio_queue.put(pcm)
 
-    def wait_for_wake_word(self) -> str:
+    def wait_for_wake_word(self):
         print("Waiting for wake word...")
 
         with sd.RawInputStream(
-            samplerate=SAMPLE_RATE,
-            blocksize=CHUNK_SIZE,
+            samplerate=INPUT_RATE,
+            blocksize=INPUT_CHUNK_SIZE,
             device=self.mic_index,
             channels=CHANNELS,
             dtype="int16",
@@ -56,10 +58,19 @@ class WakeWordListener:
         ):
             while True:
                 audio_chunk = self.audio_queue.get()
-                prediction = self.model.predict(audio_chunk)
+
+                # convert int16 -> float for resampling
+                audio_float = audio_chunk.astype(np.float32)
+
+                # 48k -> 16k
+                audio_16k = resample_poly(audio_float, MODEL_RATE, INPUT_RATE)
+
+                # back to int16 PCM
+                audio_16k = np.clip(audio_16k, -32768, 32767).astype(np.int16)
+
+                prediction = self.model.predict(audio_16k)
 
                 for wake_name, score in prediction.items():
                     if score >= self.threshold:
                         print(f"Wake word detected: {wake_name} ({score:.3f})")
-                        self.model.reset()
                         return wake_name

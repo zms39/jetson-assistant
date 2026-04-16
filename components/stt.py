@@ -2,7 +2,7 @@ import sounddevice as sd
 import numpy as np
 from faster_whisper import WhisperModel
 
-MIC_INDEX = 0        # change to your mic index from Phase 2
+MIC_INDEX = 24
 RECORD_SECONDS = 5   # how long to listen after wake word
 
 class SpeechToText:

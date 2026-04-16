@@ -18,14 +18,13 @@ CHANNELS = 1
 # 80 ms chunk at 48 kHz = 3840 samples
 INPUT_CHUNK_SIZE = 3840
 
-
 class WakeWordListener:
     def __init__(
         self,
-        mic_index: int = MIC_INDEX,
+        mic_index: int = 24,
         threshold: float = 0.5,
         vad_threshold: float = 0.3,
-        model_names=None,
+        wakeword_models=None,
     ):
         self.mic_index = mic_index
         self.threshold = threshold
@@ -34,7 +33,7 @@ class WakeWordListener:
         openwakeword.utils.download_models()
 
         self.model = Model(
-            wakeword_models=model_names if model_names else None,
+            wakeword_models=wakeword_models if wakeword_models is not None else [],
             vad_threshold=vad_threshold,
         )
 

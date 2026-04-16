@@ -1,32 +1,27 @@
 import queue
-import numpy as np
-import sounddevice as sd
-from scipy.signal import resample_poly
-import openwakeword
-from openwakeword.model import Model
 import time
 
+import numpy as np
+import openwakeword
+import sounddevice as sd
+from openwakeword.model import Model
+from scipy.signal import resample_poly
+
 MIC_INDEX = 24
-
-# Mic capture rate
 INPUT_RATE = 48000
-
-# openWakeWord expects 16 kHz int16 PCM
 MODEL_RATE = 16000
-
 CHANNELS = 1
+INPUT_CHUNK_SIZE = 3840  # 80 ms at 48 kHz
 
-# 80 ms chunk at 48 kHz = 3840 samples
-INPUT_CHUNK_SIZE = 3840
 
 class WakeWordListener:
     def __init__(
         self,
-        mic_index: int = 24,
+        mic_index: int = MIC_INDEX,
         threshold: float = 0.5,
         vad_threshold: float = 0.3,
         wakeword_models=None,
-        cooldown_seconds: float = 4,
+        cooldown_seconds: float = 1.5,
     ):
         self.mic_index = mic_index
         self.threshold = threshold
@@ -40,12 +35,23 @@ class WakeWordListener:
             vad_threshold=vad_threshold,
         )
 
-    def _audio_callback(self, indata, frames, time, status):
+    def _audio_callback(self, indata, frames, time_info, status):
         if status:
             print(f"Audio status: {status}")
-
         pcm = np.frombuffer(indata, dtype=np.int16).copy()
         self.audio_queue.put(pcm)
+
+    def _flush_model_state(self):
+        # openWakeWord can keep prior audio context around after a hit.
+        # Feed silence until predictions drop below threshold.
+        flush_chunk = np.zeros(1280, dtype=np.int16)   # 80 ms at 16 kHz
+        max_flush_iters = 25  # about 2 seconds / 32k+ samples total
+
+        for _ in range(max_flush_iters):
+            prediction = self.model.predict(flush_chunk)
+            still_hot = any(score >= self.threshold for score in prediction.values())
+            if not still_hot:
+                break
 
     def wait_for_wake_word(self):
         print("Waiting for wake word...")
@@ -61,13 +67,8 @@ class WakeWordListener:
             while True:
                 audio_chunk = self.audio_queue.get()
 
-                # convert int16 -> float for resampling
                 audio_float = audio_chunk.astype(np.float32)
-
-                # 48k -> 16k
                 audio_16k = resample_poly(audio_float, MODEL_RATE, INPUT_RATE)
-
-                # back to int16 PCM
                 audio_16k = np.clip(audio_16k, -32768, 32767).astype(np.int16)
 
                 prediction = self.model.predict(audio_16k)
@@ -82,5 +83,6 @@ class WakeWordListener:
                             except Exception:
                                 break
 
+                        self._flush_model_state()
                         time.sleep(self.cooldown_seconds)
                         return wake_name

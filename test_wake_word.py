@@ -1,5 +1,4 @@
 from components.wake_word import WakeWordListener
-import time
 
 def main():
     wake = WakeWordListener(
@@ -11,7 +10,6 @@ def main():
     while True:
         detected = wake.wait_for_wake_word()
         print(f"Detected: {detected}")
-        time.sleep(4)
 
 if __name__ == "__main__":
     main()

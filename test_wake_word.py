@@ -5,7 +5,6 @@ def main():
         mic_index=24,
         threshold=0.5,
         vad_threshold=0.3,
-        wakeword_models=None,
     )
 
     while True:

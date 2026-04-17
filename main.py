@@ -11,7 +11,7 @@ from components.tts import TextToSpeech
 from components.wake_word import WakeWordListener
 from display.display_manager import DisplayManager
 
-MIC_INDEX = 24
+MIC_INDEX = 0
 WAKE_THRESHOLD = 0.7
 VAD_THRESHOLD = 0.3
 

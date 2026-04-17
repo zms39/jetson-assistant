@@ -7,7 +7,7 @@ import sounddevice as sd
 from openwakeword.model import Model
 from scipy.signal import resample_poly
 
-MIC_INDEX = 24
+MIC_INDEX = 0
 INPUT_RATE = 48000
 MODEL_RATE = 16000
 CHANNELS = 1

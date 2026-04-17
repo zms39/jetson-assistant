@@ -3,7 +3,7 @@ import sounddevice as sd
 from scipy.signal import resample_poly
 from faster_whisper import WhisperModel
 
-MIC_INDEX = 24
+MIC_INDEX = 0
 RECORD_SECONDS = 5
 NATIVE_RATE = 48000
 TARGET_RATE = 16000

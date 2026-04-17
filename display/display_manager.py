@@ -7,7 +7,7 @@ import datetime
 
 WIDTH, HEIGHT = 1024, 600
 MAX_VISIBLE_LINES = 4
-SCROLL_INTERVAL = 2.5  # seconds per line
+SCROLL_INTERVAL = 7  # seconds per line
 
 
 class DisplayManager:

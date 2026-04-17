@@ -73,6 +73,7 @@ class WakeWordListener:
 
                 prediction = self.model.predict(audio_16k)
 
+                # ADD THIS LINE:
                 print({k: f"{v:.3f}" for k, v in prediction.items()})
 
                 for wake_name, score in prediction.items():

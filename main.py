@@ -45,13 +45,16 @@ def main():
     transcribed     = ""
 
     def launch(fn, *args):
-        """Run fn(*args) in a daemon thread; set working=False when done."""
         nonlocal working
         working = True
         result[0] = None
         def _run():
             nonlocal working
-            result[0] = fn(*args)
+            try:
+                result[0] = fn(*args)
+            except Exception as e:
+                print(f"[thread error] {fn.__name__}: {e}")
+                result[0] = None
             working = False
         threading.Thread(target=_run, daemon=True).start()
 

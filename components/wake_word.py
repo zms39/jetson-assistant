@@ -73,6 +73,8 @@ class WakeWordListener:
 
                 prediction = self.model.predict(audio_16k)
 
+                print({k: f"{v:.3f}" for k, v in prediction.items()})
+
                 for wake_name, score in prediction.items():
                     if score >= self.threshold:
                         print(f"Wake word detected: {wake_name} ({score:.3f})")

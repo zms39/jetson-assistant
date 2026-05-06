@@ -10,7 +10,7 @@ TARGET_RATE = 16000
 MAX_RECORD_SECONDS = 5
 CHUNK_SECONDS = 0.25
 SILENCE_SECONDS_TO_STOP = 1.0
-SILENCE_THRESHOLD = 0.01
+SILENCE_THRESHOLD = 0.1
 
 
 class SpeechToText:
@@ -47,7 +47,7 @@ class SpeechToText:
 
                 audio_flat = np.squeeze(audio_chunk)
                 volume = np.sqrt(np.mean(audio_flat ** 2))
-                print(f"volume: {volume:.5f}")
+                # print(f"volume: {volume:.5f}")
 
                 chunks.append(audio_flat)
 

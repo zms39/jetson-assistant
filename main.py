@@ -65,6 +65,7 @@ def main():
         display.update()
 
         if working:
+            time.sleep(0.01)
             continue
 
         if phase == "idle":

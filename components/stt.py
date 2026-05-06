@@ -47,6 +47,7 @@ class SpeechToText:
 
                 audio_flat = np.squeeze(audio_chunk)
                 volume = np.sqrt(np.mean(audio_flat ** 2))
+                print(f"volume: {volume:.5f}")
 
                 chunks.append(audio_flat)
 

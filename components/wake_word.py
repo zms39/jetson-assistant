@@ -11,7 +11,7 @@ MIC_INDEX = 0
 INPUT_RATE = 48000
 MODEL_RATE = 16000
 CHANNELS = 1
-INPUT_CHUNK_SIZE = 3840  # 80 ms at 48 kHz
+INPUT_CHUNK_SIZE = 7680  # 80 ms at 48 kHz
 
 
 class WakeWordListener:

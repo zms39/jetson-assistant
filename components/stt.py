@@ -17,7 +17,7 @@ class SpeechToText:
     def __init__(self, mic_index: int = MIC_INDEX):
         self.mic_index = mic_index
 
-        print("Loading Whisper model... (first time takes ~30 seconds)")
+        print("Loading Whisper model... (first time takes ~10 seconds)")
         self.model = WhisperModel("small", device="cpu", compute_type="int8")
         print("Whisper ready.")
 
@@ -33,11 +33,11 @@ class SpeechToText:
         started_speaking = False
 
         with sd.InputStream(
-            samplerate=NATIVE_RATE,
-            channels=1,
-            dtype="float32",
-            device=self.mic_index,
-            blocksize=chunk_samples,
+            samplerate = NATIVE_RATE,
+            channels = 1,
+            dtype = "float32",
+            device = self.mic_index,
+            blocksize = chunk_samples,
         ) as stream:
             for _ in range(max_chunks):
                 audio_chunk, overflowed = stream.read(chunk_samples)
@@ -47,7 +47,9 @@ class SpeechToText:
 
                 audio_flat = np.squeeze(audio_chunk)
                 volume = np.sqrt(np.mean(audio_flat ** 2))
-                # print(f"volume: {volume:.5f}")
+                
+                # Troubleshooting to determine background noise
+                # print(f"volume: {volume:.5f}") 
 
                 chunks.append(audio_flat)
 

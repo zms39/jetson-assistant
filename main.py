@@ -11,11 +11,12 @@ from components.tts import TextToSpeech
 from components.wake_word import WakeWordListener
 from display.display_manager import DisplayManager, ART_KEYWORDS, NEXT_KEYWORDS
 
-MIC_INDEX      = 0
+# The variables that indicate the volume control for environment
+MIC_INDEX = 0
 WAKE_THRESHOLD = 0.7
-VAD_THRESHOLD  = 0.3
+VAD_THRESHOLD = 0.3
 
-
+# Initialization of the Ollama model
 def wait_for_ollama():
     print("Waiting for Ollama...")
     while True:
@@ -32,21 +33,24 @@ def wait_for_ollama():
 def main():
     wait_for_ollama()
 
-    wake    = WakeWordListener(mic_index=MIC_INDEX, threshold=WAKE_THRESHOLD, vad_threshold=VAD_THRESHOLD)
-    stt     = SpeechToText(mic_index=MIC_INDEX)
-    llm     = LLMClient()
-    tts     = TextToSpeech()
+    # Listen for the wake word
+    wake = WakeWordListener(mic_index=MIC_INDEX, threshold=WAKE_THRESHOLD, vad_threshold=VAD_THRESHOLD)
+    stt = SpeechToText(mic_index=MIC_INDEX)
+    llm = LLMClient()
+    tts = TextToSpeech()
     display = DisplayManager()
 
-    phase         = "idle"
-    working       = False
-    result        = [None]
+    # Details the variables for each phase
+    phase = "idle"
+    working = False
+    result = [None]
     response_text = ""
-    transcribed   = ""
+    transcribed = ""
 
+    # Initial code to check for errors in the loading of the models
     def launch(fn, *args):
         nonlocal working
-        working   = True
+        working = True
         result[0] = None
         def _run():
             nonlocal working
@@ -61,6 +65,7 @@ def main():
     launch(wake.wait_for_wake_word)
 
     while True:
+        # Display settings
         display.set_state(phase, response_text)
         display.update()
 

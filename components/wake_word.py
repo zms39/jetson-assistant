@@ -7,6 +7,7 @@ import sounddevice as sd
 from openwakeword.model import Model
 from scipy.signal import resample_poly
 
+# Input parameters for the microphone / soundwave input
 MIC_INDEX = 0
 INPUT_RATE = 48000
 MODEL_RATE = 16000
@@ -15,6 +16,7 @@ INPUT_CHUNK_SIZE = 7680  # 80 ms at 48 kHz
 
 
 class WakeWordListener:
+    # Constructor function
     def __init__(
         self,
         mic_index: int = MIC_INDEX,
@@ -52,7 +54,6 @@ class WakeWordListener:
             still_hot = any(score >= self.threshold for score in prediction.values())
             if not still_hot:
                 break
-
     def wait_for_wake_word(self):
         print("Waiting for wake word...")
 

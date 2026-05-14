@@ -5,6 +5,7 @@ import time
 import random
 import datetime
 
+# Initialization of the screen resolution
 WIDTH, HEIGHT = 1024, 600
 
 PHOSPHOR     = (80, 255, 120)

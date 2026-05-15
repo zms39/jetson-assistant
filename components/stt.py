@@ -3,7 +3,6 @@ import sounddevice as sd
 from scipy.signal import resample_poly
 from faster_whisper import WhisperModel
 
-MIC_INDEX = 24
 NATIVE_RATE = 48000
 TARGET_RATE = 16000
 
@@ -12,9 +11,14 @@ CHUNK_SECONDS = 0.25
 SILENCE_SECONDS_TO_STOP = 1.0
 SILENCE_THRESHOLD = 0.1
 
+def _find_mic_index():
+    for i, dev in enumerate(sd.query_devices()):
+        if 'usb' in dev['name'].lower() and dev['max_input_channels'] > 0:
+            return i
+    raise RuntimeError("USB microphone not found")
 
 class SpeechToText:
-    def __init__(self, mic_index: int = MIC_INDEX):
+    def __init__(self, mic_index: int = _find_mic_index()):
         self.mic_index = mic_index
 
         print("Loading Whisper model... (first time takes ~10 seconds)")

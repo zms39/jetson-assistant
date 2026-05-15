@@ -2,6 +2,7 @@ import sys
 import time
 import threading
 import requests
+import sounddevice as sd
 
 # Allow imports from the project root regardless of working directory
 sys.path.insert(0, '/home/cwru26ai/assistant')
@@ -11,9 +12,6 @@ from components.llm import LLMClient
 from components.tts import TextToSpeech
 from components.wake_word import WakeWordListener
 from display.display_manager import DisplayManager, ART_KEYWORDS, NEXT_KEYWORDS
-
-# Microphone device index
-MIC_INDEX = 24
 
 # Wake word confidence threshold (0.0 - 1.0)
 # Lower values increase sensitivity but risk false positives
@@ -40,13 +38,19 @@ def wait_for_ollama():
             pass
         time.sleep(2)
 
+# Finds microphone index
+def _find_mic_index():
+    for i, dev in enumerate(sd.query_devices()):
+        if 'usb' in dev['name'].lower() and dev['max_input_channels'] > 0:
+            return i
+    raise RuntimeError("USB microphone not found")
 
 def main():
     wait_for_ollama()
 
     # Initialise all components
-    wake = WakeWordListener(mic_index = MIC_INDEX, threshold = WAKE_THRESHOLD, vad_threshold = VAD_THRESHOLD)
-    stt = SpeechToText(mic_index = MIC_INDEX)
+    wake = WakeWordListener(mic_index = _find_mic_index(), threshold = WAKE_THRESHOLD, vad_threshold = VAD_THRESHOLD)
+    stt = SpeechToText(mic_index = _find_mic_index())
     llm = LLMClient()
     tts = TextToSpeech()
     display = DisplayManager()

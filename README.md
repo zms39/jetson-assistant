@@ -55,24 +55,7 @@ pip install faster-whisper openwakeword sounddevice scipy numpy requests pygame
 
 ---
 
-## 3. Verify Microphone Index
-
-In the file `stt.py`, there's a location to initialize the location of the USB microphone. To determine where your microphone is, run this:
-```bash
-python3 -c "import sounddevice as sd; print(sd.query_devices())"
-
-# Find the list index for usb microphone: USB Audio (hw:2,0)
-```
-
-Then go to `stt.py` and replace this code line.
-
-```bash
-MIC_INDEX = # Microphone index
-```
-
----
-
-## 4. Run the Assistant
+## 3. Run the Assistant
 
 The assistant requires Ollama to be running before `main.py` is started. Open two terminals:
 

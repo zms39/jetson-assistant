@@ -13,7 +13,7 @@ from components.wake_word import WakeWordListener
 from display.display_manager import DisplayManager, ART_KEYWORDS, NEXT_KEYWORDS
 
 # Microphone device index
-MIC_INDEX = 0
+MIC_INDEX = 24
 
 # Wake word confidence threshold (0.0 - 1.0)
 # Lower values increase sensitivity but risk false positives

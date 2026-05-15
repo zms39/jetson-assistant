@@ -8,7 +8,7 @@ from openwakeword.model import Model
 from scipy.signal import resample_poly
 
 # Input parameters for the microphone / soundwave input
-MIC_INDEX = 0
+MIC_INDEX = 24
 INPUT_RATE = 48000
 MODEL_RATE = 16000
 CHANNELS = 1

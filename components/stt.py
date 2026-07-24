@@ -3,7 +3,12 @@ import sounddevice as sd
 from scipy.signal import resample_poly
 from faster_whisper import WhisperModel
 
-MIC_INDEX = 24
+def _find_mic_index():
+    for i, dev in enumerate(sd.query_devices()):
+        if 'usb' in dev['name'].lower() and dev['max_input_channels'] > 0:
+            return i
+    raise RuntimeError("USB microphone not found")
+MIC_INDEX = _find_mic_index()
 NATIVE_RATE = 48000
 TARGET_RATE = 16000
 

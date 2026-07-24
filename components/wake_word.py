@@ -8,7 +8,12 @@ from openwakeword.model import Model
 from scipy.signal import resample_poly
 
 # Input parameters for the microphone / soundwave input
-MIC_INDEX = 24
+def _find_mic_index():
+    for i, dev in enumerate(sd.query_devices()):
+        if 'usb' in dev['name'].lower() and dev['max_input_channels'] > 0:
+            return i
+    raise RuntimeError("USB microphone not found")
+MIC_INDEX = _find_mic_index()
 INPUT_RATE = 48000
 MODEL_RATE = 16000
 CHANNELS = 1

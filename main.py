@@ -5,6 +5,7 @@ import requests
 
 # Allow imports from the project root regardless of working directory
 sys.path.insert(0, '/home/cwru26ai/assistant')
+import sounddevice as sd
 
 from components.stt import SpeechToText
 from components.llm import LLMClient
@@ -13,7 +14,12 @@ from components.wake_word import WakeWordListener
 from display.display_manager import DisplayManager, ART_KEYWORDS, NEXT_KEYWORDS
 
 # Microphone device index
-MIC_INDEX = 24
+def _find_mic_index():
+    for i, dev in enumerate(sd.query_devices()):
+        if 'usb' in dev['name'].lower() and dev['max_input_channels'] > 0:
+            return i
+    raise RuntimeError("USB microphone not found")
+MIC_INDEX = _find_mic_index()
 
 # Wake word confidence threshold (0.0 - 1.0)
 # Lower values increase sensitivity but risk false positives

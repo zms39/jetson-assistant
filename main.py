@@ -4,7 +4,9 @@ import threading
 import requests
 
 # Allow imports from the project root regardless of working directory
-sys.path.insert(0, '/home/cwru26ai/assistant')
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import sounddevice as sd
 
 from components.stt import SpeechToText

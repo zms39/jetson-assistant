@@ -1,7 +1,8 @@
 import subprocess
 import os
 
-MODEL_PATH = "/home/cwru26ai/assistant/models/en_US-lessac-medium.onnx"
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_PATH = os.path.join(_PROJECT_ROOT, "models", "en_US-lessac-medium.onnx")
 
 class TextToSpeech:
     def speak(self, text):

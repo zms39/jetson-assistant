@@ -4,10 +4,11 @@ import json
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL = "llama3.2:3b"
 
-SYSTEM_PROMPT = """You are a concise voice assistant named Jarvis.
+SYSTEM_PROMPT = """You are a voice assistant named Jarvis.
 Respond in plain spoken sentences only.
 No bullet points, no markdown, no lists.
-Keep responses under 3 sentences unless the user asks for detail."""
+Keep responses as concise as possible, elaborating if 
+the user asks for detail."""
 
 class LLMClient:
     def query(self, user_text, context=""):

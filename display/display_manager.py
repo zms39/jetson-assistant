@@ -556,7 +556,19 @@ class DisplayManager:
                 self._last_char_t  = now
                 if self._chars_shown >= sum(len(l) + 1 for l in self._lines):
                     self._type_done = True
+
+            # Keep the line currently being typed in view
+            count, cur_line = 0, 0
+            for i, l in enumerate(self._lines):
+                count += len(l) + 1
+                if count >= self._chars_shown:
+                    cur_line = i
+                    break
+            if cur_line >= self._scroll_idx + MAX_VISIBLE:
+                self._scroll_idx = cur_line - MAX_VISIBLE + 1
+
             return
+
         total = len(self._lines)
         if (total > MAX_VISIBLE and
                 self._scroll_idx + MAX_VISIBLE < total and
@@ -577,7 +589,7 @@ class DisplayManager:
             if shown:
                 surf = self.font_small.render(shown, True, PHOSPHOR)
                 self.screen.blit(surf, (WIDTH // 2 - self.font_small.size(line)[0] // 2, y))
-            if not cursor_drawn and not self._type_done:
+            if (not cursor_drawn and not self._type_done and len(shown) < len(line)):
                 if int(time.time() * 5) % 2 == 0:
                     cx = (WIDTH // 2 - self.font_small.size(line)[0] // 2
                           + self.font_small.size(shown)[0])

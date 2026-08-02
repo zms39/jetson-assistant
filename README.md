@@ -11,7 +11,7 @@ A retro-inspired, fully on-device AI voice assistant built on the NVIDIA Jetson 
 * "What's the weather"
 * "Set a 10 minute timer"
 
-Afterwards, it processes your vocal query locally using a small language model to convert the speech to text. The text is passed to llama3.2:3b model to develop a reply. Finally the response is displayed on the screen before returning to an idle animation. 
+Afterwards, it processes your vocal query locally: speech is transcribed on-device by Whisper, the text is passed to the llama3.2:3b model via Ollama to generate a reply, and the response is spoken aloud with Piper while being typed out on the display before returning to an idle animation.
 
 ## Model System Architecture
 
@@ -25,76 +25,51 @@ Afterwards, it processes your vocal query locally using a small language model t
 
 ## Prerequisites
 
-Before cloning the repo, make sure the following are installed on your Jetson Orin Nano:
+- Micro sd card with _Jetson Orin Nano Developer Kit on JetPack 6.x_ download
+- A USB microphone
+- Git LFS
 
-- **Python 3.10**
+```bash
+sudo apt install git-lfs
+```
 
-    ```bash
-    sudo apt-get install python3.10
-    ```
-    
-- **Docker with NVIDIA Container Runtime**
-    - Follow the setup guide at [jetson-containers](https://github.com/dusty-nv/jetson-containers) if not already configured.
-    - You can also use this video as a reference to [Set-up NVIDIA Jetson](https://youtu.be/-PjMC0gyH9s?si=VsEOnAjxEsPE-9xQ).
+- Ollama
 
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3.2:3b
+```
 
 ## 1. Clone the Repository
 
 ```bash
 git clone https://github.com/zms39/jetson-assistant.git
 cd jetson-assistant
+
+# Download the Piper voice model (~63 MB)
+git lfs install
+git lfs pull
 ```
 
----
-
-## 2. Install Python Dependencies
+## 2. Set Up the Python Environment
 
 ```bash
-pip install faster-whisper openwakeword sounddevice scipy numpy requests pygame
+sudo apt install python3.10-venv portaudio19-dev libportaudio2
+python3 -m venv venv
+source venv/bin/activate
+
+# Install libraries
+pip install "numpy==1.26.4" faster-whisper openwakeword sounddevice scipy requests pygame piper-tts
 ```
 
----
+NumPy is pinned below 2.0 for compatibility with `tflite_runtime`, which openWakeWord uses.
 
-## 3. Verify Microphone Index
+## 3. Run the Program
 
-In the file `stt.py`, there's a location to initialize the location of the USB microphone. To determine where your microphone is, run this:
-```bash
-python3 -c "import sounddevice as sd; print(sd.query_devices())"
-
-# Find the list index for usb microphone: USB Audio (hw:2,0)
-```
-
-Then go to `stt.py` and replace this code line.
+From the project root with the venv active:
 
 ```bash
-MIC_INDEX = # Microphone index
+python main.py
 ```
 
----
-
-## 4. Run the Assistant
-
-The assistant requires Ollama to be running before `main.py` is started. Open two terminals:
-
-**Terminal 1:** Start Ollama
-
-```bash
-sudo docker run --runtime nvidia -it --rm --network host dustynv/ollama:0.6.8-r36.4-cu126-22.04
-
-ollama pull llama3.2:3b
-```
-
-**Terminal 2:** Start the assistant
-
-```bash
-python3 main.py
-```
-
-The display will initialize and the assistant will enter idle mode, listening for a wake word.
-
-## Known Issues
-
-If you encounter a NumPy version conflict with `tflite_runtime`, pin NumPy below 2.0:
-> ```bash
-> pip install "numpy<2.0"
-> ```
+`main.py` waits for Ollama, loads the Whisper and wake word models, then enters idle mode. Press `ESC` to exit to the desktop, `A` to toggle dot matrix art mode, and `N` to cycle animations.

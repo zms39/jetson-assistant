@@ -4,6 +4,7 @@ import math
 import time
 import random
 import datetime
+import os
 
 # Initialization of the screen resolution
 WIDTH, HEIGHT = 1024, 600
@@ -338,7 +339,9 @@ class DisplayManager:
         self.clock = pygame.time.Clock()
 
         # Loading cat image for thinking state
-        cat_path = "/home/cwru26ai/assistant/assets/loadingCat.png"
+        cat_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "assets", "loadingCat.png")
         try:
             raw = pygame.image.load(cat_path).convert()
             iw, ih = raw.get_size()

@@ -60,7 +60,7 @@ class TextToSpeech:
                 if dev['max_output_channels'] >= 2:
                     audio = np.column_stack([audio, audio])
 
-            sd.play(audio, rate, device=SPEAKER_INDEX)
+            sd.play(audio, rate, device=SPEAKER_INDEX, blocksize=2048, latency='high')
             sd.wait()
 
         except Exception as e:

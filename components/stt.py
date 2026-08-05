@@ -54,7 +54,7 @@ class SpeechToText:
                 volume = np.sqrt(np.mean(audio_flat ** 2))
                 
                 # Troubleshooting to determine background noise
-                # print(f"volume: {volume:.5f}") 
+                print(f"volume: {volume:.5f}") 
 
                 chunks.append(audio_flat)
 

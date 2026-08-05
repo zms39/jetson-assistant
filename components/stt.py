@@ -12,11 +12,10 @@ MIC_INDEX = _find_mic_index()
 NATIVE_RATE = 48000
 TARGET_RATE = 16000
 
-MAX_RECORD_SECONDS = 5
 CHUNK_SECONDS = 0.25
-SILENCE_SECONDS_TO_STOP = 1.0
-SILENCE_THRESHOLD = 0.1
-
+MAX_RECORD_SECONDS = 15
+SILENCE_SECONDS_TO_STOP = 1.5
+SILENCE_THRESHOLD = 0.025
 
 class SpeechToText:
     def __init__(self, mic_index: int = MIC_INDEX):
@@ -54,7 +53,7 @@ class SpeechToText:
                 volume = np.sqrt(np.mean(audio_flat ** 2))
                 
                 # Troubleshooting to determine background noise
-                print(f"volume: {volume:.5f}") 
+                # print(f"volume: {volume:.5f}") 
 
                 chunks.append(audio_flat)
 

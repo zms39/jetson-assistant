@@ -25,7 +25,7 @@ else:
 
 
 class TextToSpeech:
-    def speak(self, text):
+    def speak(self, text, on_start=None):
         print(f"Speaking: {text}")
         output_file = "/tmp/response.wav"
 
@@ -37,16 +37,16 @@ class TextToSpeech:
         )
 
         if os.path.exists(output_file):
-            self._play_wav(output_file)
+            self._play_wav(output_file, on_start)
         else:
             print("TTS failed:", process.stderr.decode())
 
-    def _play_wav(self, path):
+    def _play_wav(self, path, on_start=None):
         try:
             rate, audio = wavfile.read(path)
+            duration = len(audio) / rate  # seconds, measured from the actual WAV
 
-            # Piper outputs mono 22050 Hz. If the output device rejects
-            # that format, convert to the device's native rate / stereo.
+            # (existing format-check / resample-to-stereo block stays here unchanged)
             try:
                 sd.check_output_settings(device=SPEAKER_INDEX, samplerate=rate, channels=1)
             except Exception:
@@ -60,10 +60,23 @@ class TextToSpeech:
                 if dev['max_output_channels'] >= 2:
                     audio = np.column_stack([audio, audio])
 
-            sd.play(audio, rate, device=SPEAKER_INDEX, blocksize=2048, latency='high')
-            sd.wait()
+            # Tell the caller how long the speech is, the instant before it starts
+            if on_start:
+                on_start(duration)
+
+            channels = audio.shape[1] if audio.ndim > 1 else 1
+            with sd.OutputStream(samplerate=rate, device=SPEAKER_INDEX,
+                                 channels=channels, dtype='int16',
+                                 blocksize=2048, latency='high') as stream:
+                stream.write(audio)
 
         except Exception as e:
-            # Last resort: hand the file to ALSA directly
             print(f"[tts] sounddevice playback failed ({e}); falling back to aplay")
+            if on_start:
+                # Fallback path: estimate duration so the display still paces itself
+                try:
+                    rate, audio = wavfile.read(path)
+                    on_start(len(audio) / rate)
+                except Exception:
+                    on_start(None)
             subprocess.run(["aplay", path])

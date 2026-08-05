@@ -324,6 +324,7 @@ class DisplayManager:
         self._type_done    = False
         self._last_char_t  = 0.0
         self._last_scroll_t= 0.0
+        self._char_interval = CHAR_INTERVAL
 
         self.art_mode = False
         self._dot_art = DotMatrixArt()
@@ -366,7 +367,7 @@ class DisplayManager:
         return s
 
     # ------------------------------------------------------------------
-    def set_state(self, state, text=""):
+    def set_state(self, state, text="", duration=None):
         self.state = state
         if text != self.response_text:
             self.response_text = text
@@ -376,6 +377,15 @@ class DisplayManager:
             self._type_done    = False
             self._last_char_t  = time.time()
             self._last_scroll_t= time.time()
+
+            total_chars = sum(len(l) + 1 for l in self._lines)
+            if duration and total_chars > 0:
+                # Spread the reveal across the speech, but never slower than the
+                # default cadence for very long/slow audio, and clamp so it can't
+                # go absurdly fast on a tiny clip.
+                self._char_interval = max(0.012, min(CHAR_INTERVAL, duration / total_chars))
+            else:
+                self._char_interval = CHAR_INTERVAL
 
     def toggle_art_mode(self):
         self.art_mode = not self.art_mode
@@ -551,7 +561,7 @@ class DisplayManager:
 
     def _tick_teletype(self, now):
         if not self._type_done:
-            if now - self._last_char_t >= CHAR_INTERVAL:
+            if now - self._last_char_t >= self._char_interval:
                 self._chars_shown += 1
                 self._last_char_t  = now
                 if self._chars_shown >= sum(len(l) + 1 for l in self._lines):

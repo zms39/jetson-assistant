@@ -91,8 +91,10 @@ def main():
     launch(wake.wait_for_wake_word)
 
     while True:
-        # Push the current phase and any response text to the display each frame
-        display.set_state(phase, response_text)
+        # Push phase to the display each frame, except during speaking,
+        # where the TTS callback drives the synced text reveal.
+        if phase != "speaking":
+            display.set_state(phase, response_text)
         display.update()
 
         # While a background thread is active, spin and keep the display alive
@@ -134,10 +136,19 @@ def main():
                 launch(wake.wait_for_wake_word)
 
         elif phase == "thinking":
-            # LLM has returned a response, speak it aloud
+            # LLM has returned; keep showing the thinking cat until the audio is
+            # generated, then reveal text and speak together.
             response_text = result[0] or ""
             phase = "speaking"
-            launch(tts.speak, response_text)
+
+            def speak_with_synced_text(text):
+                # Fires from the TTS thread the instant before audio plays:
+                # start the paced text reveal so it matches the speech length.
+                def reveal(duration):
+                    display.set_state("speaking", text, duration=duration)
+                tts.speak(text, on_start=reveal)
+
+            launch(speak_with_synced_text, response_text)
 
         elif phase == "speaking":
             # TTS finished, reset and return to idle wake word detection

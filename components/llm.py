@@ -114,42 +114,47 @@ class LLMClient:
             return "Okay, I've cleared my memory."
 
         self.history.append({"role": "user", "content": user_text})
-
         messages = [self.system] + self.history[-(MAX_TURNS * 2):]
 
+        answer = ""
         try:
-            first = self._chat(messages, use_tools=True)
+            for _ in range(3):  # allow up to 3 tool rounds, then force an answer
+                resp = self._chat(messages, use_tools=True)
+                tool_calls = resp.get("tool_calls")
+
+                if not tool_calls:
+                    answer = (resp.get("content") or "").strip()
+                    break
+
+                messages.append(resp)  # assistant's tool-call turn
+                for call in tool_calls:
+                    fn = call.get("function", {})
+                    if fn.get("name") == "search_web":
+                        args = fn.get("arguments", {})
+                        q = args.get("query", "") if isinstance(args, dict) else ""
+                        result = _search_web(q)
+                        messages.append({"role": "tool", "content": result})
+            else:
+                # Ran out of rounds without a plain answer: ask once more, no tools
+                final = self._chat(messages, use_tools=False)
+                answer = (final.get("content") or "").strip()
         except Exception as e:
             print(f"[llm] error: {e}")
             return "Sorry, something went wrong."
 
-        tool_calls = first.get("tool_calls")
-        if tool_calls:
-            # Model asked to search. Run each call, feed results back, ask again.
-            messages.append(first)  # the assistant's tool-call turn
-            for call in tool_calls:
-                fn = call.get("function", {})
-                if fn.get("name") == "search_web":
-                    args = fn.get("arguments", {})
-                    q = args.get("query", "") if isinstance(args, dict) else ""
-                    result = _search_web(q)
-                    messages.append({"role": "tool", "content": result})
-
-            try:
-                second = self._chat(messages, use_tools=False)
-            except Exception as e:
-                print(f"[llm] follow-up error: {e}")
-                return "Sorry, I had trouble using the search results."
-            answer = second.get("content", "").strip()
-        else:
-            answer = first.get("content", "").strip()
-
+        answer = self._strip_tool_json(answer)
         if not answer:
-            answer = "Sorry, I could not get a response."
+            answer = "Sorry, I could not find an answer."
 
         self.history.append({"role": "assistant", "content": answer})
         self._save_history()
         return answer
+
+    def _strip_tool_json(self, text):
+        """Remove any leaked tool-call JSON so it never gets spoken."""
+        import re
+        cleaned = re.sub(r'\{[^{}]*"(name|action)"[^{}]*\}', '', text).strip()
+        return cleaned if cleaned else text
 
     # ---- one round-trip to /api/chat ---------------------------------------
     def _chat(self, messages, use_tools):

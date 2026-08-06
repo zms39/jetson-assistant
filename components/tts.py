@@ -44,7 +44,18 @@ class TextToSpeech:
     def _play_wav(self, path, on_start=None):
         try:
             rate, audio = wavfile.read(path)
-            duration = len(audio) / rate  # seconds, measured from the actual WAV
+
+            # Measure the *spoken* span, not the full clip: Piper pads the WAV
+            # with silence at both ends, which would otherwise make the text
+            # pace itself over dead air and lag behind the voice.
+            mono = audio if audio.ndim == 1 else audio[:, 0]
+            amp = np.abs(mono.astype(np.float32))
+            threshold = amp.max() * 0.02   # 2% of peak = speech vs. silence
+            loud = np.where(amp > threshold)[0]
+            if len(loud) > 0:
+                duration = (loud[-1] - loud[0]) / rate
+            else:
+                duration = len(audio) / rate  # silent clip: fall back to full length
 
             # (existing format-check / resample-to-stereo block stays here unchanged)
             try:

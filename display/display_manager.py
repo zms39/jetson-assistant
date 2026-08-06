@@ -383,7 +383,7 @@ class DisplayManager:
                 # Spread the reveal across the speech, but never slower than the
                 # default cadence for very long/slow audio, and clamp so it can't
                 # go absurdly fast on a tiny clip.
-                self._char_interval = max(0.012, min(CHAR_INTERVAL, duration / total_chars))
+                self._char_interval = max(0.012, duration / total_chars)
             else:
                 self._char_interval = CHAR_INTERVAL
 

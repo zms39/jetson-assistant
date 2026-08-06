@@ -56,6 +56,7 @@ def main():
     wake = WakeWordListener(mic_index = MIC_INDEX, threshold = WAKE_THRESHOLD, vad_threshold = VAD_THRESHOLD)
     stt = SpeechToText(mic_index = MIC_INDEX)
     llm = LLMClient()
+    llm.warm_up()
     tts = TextToSpeech()
     display = DisplayManager()
 

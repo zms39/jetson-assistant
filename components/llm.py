@@ -21,9 +21,11 @@ No bullet points, no markdown, no lists.
 Keep responses as concise as possible, elaborating if the user asks for detail.
 
 You have access to a web search tool. Use it whenever the user asks about
-current events, recent releases, dates, prices, live facts, or anything that
+current events beyond 2023, recent releases, dates, prices, live facts, or anything that
 may have changed after your training. When unsure whether your knowledge is
-current, prefer searching. Do not guess at facts that could be out of date."""
+current, prefer searching. Do not guess at facts that could be out of date. 
+When you use search results, state the answer directly. Do not describe your 
+searching process or mention multiple searches"""
 
 # Tool declaration in the format Ollama's /api/chat expects
 TOOLS = [

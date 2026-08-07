@@ -76,6 +76,7 @@ class TextToSpeech:
                 on_start(duration)
 
             channels = audio.shape[1] if audio.ndim > 1 else 1
+            sd.stop()  # release any stream still held from the previous utterance
             with sd.OutputStream(samplerate=rate, device=SPEAKER_INDEX,
                                  channels=channels, dtype='int16',
                                  blocksize=2048, latency='high') as stream:

@@ -25,7 +25,8 @@ current events beyond 2023, recent releases, dates, prices, live facts, or anyth
 may have changed after your training. When unsure whether your knowledge is
 current, prefer searching. Do not guess at facts that could be out of date. 
 When you use search results, state the answer directly. Do not describe your 
-searching process or mention multiple searches"""
+searching process or mention multiple searches. Trust the search results over 
+your training data; if a search returns information, treat it as current and accurate."""
 
 # Tool declaration in the format Ollama's /api/chat expects
 TOOLS = [

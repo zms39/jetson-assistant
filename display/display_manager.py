@@ -353,6 +353,9 @@ class DisplayManager:
             print(f"[display] Could not load loadingCat.png: {e}")
             self._cat_img = None
 
+    def text_done(self):
+        return self._type_done or not self._lines
+
     def _build_scanlines(self):
         s = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         for y in range(0, HEIGHT, 2):
@@ -383,7 +386,7 @@ class DisplayManager:
                 # Spread the reveal across the speech, but never slower than the
                 # default cadence for very long/slow audio, and clamp so it can't
                 # go absurdly fast on a tiny clip.
-                self._char_interval = max(0.012, duration / total_chars)
+                self._char_interval = max(0.012, (duration / total_chars) * 0.92)
             else:
                 self._char_interval = CHAR_INTERVAL
 

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Jetson Assistant
+Exec=/home/cwru26ai/jetson-assistant/start.sh
+Terminal=true
+X-GNOME-Autostart-enabled=true

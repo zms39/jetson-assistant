@@ -152,7 +152,9 @@ def main():
             launch(speak_with_synced_text, response_text)
 
         elif phase == "speaking":
-            # TTS finished, reset and return to idle wake word detection
+            # TTS audio finished; let the on-screen text catch up before clearing
+            if not display.text_done():
+                continue
             response_text = ""
             transcribed_STT_output = ""
             phase = "idle"

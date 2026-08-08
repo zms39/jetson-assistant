@@ -4,8 +4,16 @@ from scipy.signal import resample_poly
 from faster_whisper import WhisperModel
 
 def _find_mic_index():
-    for i, dev in enumerate(sd.query_devices()):
-        if 'usb' in dev['name'].lower() and dev['max_input_channels'] > 0:
+    devices = sd.query_devices()
+    # Prefer the mic by its specific device name so a USB audio adapter's
+    # mic-in jack can never be selected instead.
+    for i, dev in enumerate(devices):
+        if 'usb microphone' in dev['name'].lower() and dev['max_input_channels'] > 0:
+            return i
+    # Fallback: any USB input device that is not the known audio-adapter output
+    for i, dev in enumerate(devices):
+        name = dev['name'].lower()
+        if 'usb' in name and dev['max_input_channels'] > 0 and 'usb audio device' not in name:
             return i
     raise RuntimeError("USB microphone not found")
 MIC_INDEX = _find_mic_index()

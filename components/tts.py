@@ -12,10 +12,17 @@ MODEL_PATH = os.path.join(_PROJECT_ROOT, "models", "en_US-lessac-medium.onnx")
 
 # Speaker device index
 def _find_speaker_index():
-    for i, dev in enumerate(sd.query_devices()):
+    devices = sd.query_devices()
+    # Match the USB audio adapter by name so selection is stable across
+    # enumeration order.
+    for i, dev in enumerate(devices):
+        if 'usb audio device' in dev['name'].lower() and dev['max_output_channels'] > 0:
+            return i
+    # Fallback: any USB output device
+    for i, dev in enumerate(devices):
         if 'usb' in dev['name'].lower() and dev['max_output_channels'] > 0:
             return i
-    return None  # no USB speaker found: fall back to system default output
+    return None
 SPEAKER_INDEX = _find_speaker_index()
 
 if SPEAKER_INDEX is not None:

@@ -152,9 +152,15 @@ def main():
             launch(speak_with_synced_text, response_text)
 
         elif phase == "speaking":
-            # TTS audio finished; let the on-screen text catch up before clearing
+            # Wait for the on-screen text to finish revealing
             if not display.text_done():
                 continue
+            # Hold the completed text on screen for a moment before clearing
+            if not hasattr(display, "_hold_until"):
+                display._hold_until = time.time() + 3.0   # seconds to linger
+            if time.time() < display._hold_until:
+                continue
+            del display._hold_until
             response_text = ""
             transcribed_STT_output = ""
             phase = "idle"
